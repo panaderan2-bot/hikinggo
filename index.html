@@ -49,6 +49,82 @@
             box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
         }
 
+        /* Modal Styles */
+        #detail-modal {
+            transition: opacity 0.3s ease-in-out;
+        }
+        #detail-modal.hidden {
+            opacity: 0;
+            pointer-events: none;
+        }
+        #detail-modal:not(.hidden) {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        /* Gallery Thumbnails */
+        .gallery-thumb {
+            transition: all 0.2s;
+            border: 2px solid transparent;
+        }
+        .gallery-thumb:hover {
+            opacity: 0.8;
+        }
+        .gallery-thumb.active-thumb {
+            border-color: #2f855a;
+            opacity: 1;
+        }
+
+        /* Spree Rating Bar */
+        .spree-bar-bg {
+            background-color: #e2e8f0;
+            border-radius: 9999px;
+            height: 8px;
+            overflow: hidden;
+        }
+        .spree-bar-fill {
+            height: 100%;
+            border-radius: 9999px;
+            transition: width 1s ease-in-out;
+        }
+
+        /* Rating Stars CSS */
+        .rate {
+            float: left;
+            height: 46px;
+            padding: 0 10px;
+        }
+        .rate:not(:checked) > input {
+            position:absolute;
+            top:-9999px;
+        }
+        .rate:not(:checked) > label {
+            float:right;
+            width:1em;
+            overflow:hidden;
+            white-space:nowrap;
+            cursor:pointer;
+            font-size:30px;
+            color:#ccc;
+        }
+        .rate:not(:checked) > label:before {
+            content: '★ ';
+        }
+        .rate > input:checked ~ label {
+            color: #ffc700;    
+        }
+        .rate:not(:checked) > label:hover,
+        .rate:not(:checked) > label:hover ~ label {
+            color: #deb217;  
+        }
+        .rate > input:checked + label:hover,
+        .rate > input:checked + label:hover ~ label,
+        .rate > input:checked ~ label:hover,
+        .rate > input:checked ~ label:hover ~ label,
+        .rate > label:hover ~ input:checked ~ label {
+            color: #c59b08;
+        }
+
         /* Animation for Contact Page */
         #canvas-container {
             position: absolute;
@@ -91,13 +167,6 @@
         .page-section.active {
             display: block;
         }
-        
-        .info-badge {
-            font-size: 0.8rem;
-            display: flex;
-            align-items: center;
-            gap: 4px;
-        }
     </style>
 </head>
 <body class="bg-gray-50 text-gray-800">
@@ -112,13 +181,32 @@
                 </div>
                 <!-- Desktop Menu -->
                 <div class="hidden md:flex items-center space-x-8">
-                    <button onclick="navigateTo('home')" class="text-gray-600 hover:text-green-600 font-medium transition">หน้าแรก</button>
-                    <button onclick="navigateTo('top10')" class="text-gray-600 hover:text-green-600 font-medium transition">แนะนำเส้นทาง</button>
-                    <button onclick="navigateTo('categories')" class="text-gray-600 hover:text-green-600 font-medium transition">ค้นหาตามภาค/ระดับ</button>
-                    <button onclick="navigateTo('contact')" class="text-gray-600 hover:text-green-600 font-medium transition">ผู้จัดทำ</button>
+                    <button onclick="navigateTo('home')" class="nav-item text-gray-600 hover:text-green-600 font-medium transition" data-key="home">
+                        หน้าแรก
+                    </button>
+                    <button onclick="navigateTo('top10')" class="nav-item text-gray-600 hover:text-green-600 font-medium transition" data-key="recommend">
+                        แนะนำเส้นทาง
+                    </button>
+                    <button onclick="navigateTo('categories')" class="nav-item text-gray-600 hover:text-green-600 font-medium transition" data-key="search">
+                        ค้นหา
+                    </button>
+                    <button onclick="navigateTo('contact')" class="nav-item text-gray-600 hover:text-green-600 font-medium transition" data-key="contact">
+                        ผู้จัดทำ
+                    </button>
+                    
+                    <!-- Language Switcher -->
+                    <div class="flex items-center ml-4 bg-gray-100 rounded-full p-1">
+                        <button onclick="changeLanguage('th')" id="btn-th" class="px-3 py-1 rounded-full text-xs font-bold bg-green-600 text-white transition">TH</button>
+                        <button onclick="changeLanguage('en')" id="btn-en" class="px-3 py-1 rounded-full text-xs font-bold text-gray-500 hover:text-green-600 transition">EN</button>
+                    </div>
                 </div>
                 <!-- Mobile Menu Button -->
-                <div class="md:hidden flex items-center">
+                <div class="md:hidden flex items-center gap-4">
+                     <!-- Mobile Language Switcher -->
+                     <div class="flex items-center bg-gray-100 rounded-full p-1">
+                        <button onclick="changeLanguage('th')" id="btn-th-m" class="px-2 py-1 rounded-full text-xs font-bold bg-green-600 text-white transition">TH</button>
+                        <button onclick="changeLanguage('en')" id="btn-en-m" class="px-2 py-1 rounded-full text-xs font-bold text-gray-500 transition">EN</button>
+                    </div>
                     <button onclick="toggleMobileMenu()" class="text-gray-600 hover:text-green-600 focus:outline-none">
                         <i class="fa-solid fa-bars text-2xl"></i>
                     </button>
@@ -127,10 +215,18 @@
         </div>
         <!-- Mobile Menu Dropdown -->
         <div id="mobile-menu" class="hidden md:hidden bg-white border-t">
-            <button onclick="navigateTo('home'); toggleMobileMenu()" class="block w-full text-left px-4 py-3 text-gray-600 hover:bg-green-50">หน้าแรก</button>
-            <button onclick="navigateTo('top10'); toggleMobileMenu()" class="block w-full text-left px-4 py-3 text-gray-600 hover:bg-green-50">แนะนำเส้นทาง</button>
-            <button onclick="navigateTo('categories'); toggleMobileMenu()" class="block w-full text-left px-4 py-3 text-gray-600 hover:bg-green-50">ค้นหาตามภาค/ระดับ</button>
-            <button onclick="navigateTo('contact'); toggleMobileMenu()" class="block w-full text-left px-4 py-3 text-gray-600 hover:bg-green-50">ผู้จัดทำ</button>
+            <button onclick="navigateTo('home'); toggleMobileMenu()" class="nav-item block w-full text-left px-4 py-3 text-gray-600 hover:bg-green-50" data-key="home">
+                หน้าแรก
+            </button>
+            <button onclick="navigateTo('top10'); toggleMobileMenu()" class="nav-item block w-full text-left px-4 py-3 text-gray-600 hover:bg-green-50" data-key="recommend">
+                แนะนำเส้นทาง
+            </button>
+            <button onclick="navigateTo('categories'); toggleMobileMenu()" class="nav-item block w-full text-left px-4 py-3 text-gray-600 hover:bg-green-50" data-key="search">
+                ค้นหา
+            </button>
+            <button onclick="navigateTo('contact'); toggleMobileMenu()" class="nav-item block w-full text-left px-4 py-3 text-gray-600 hover:bg-green-50" data-key="contact">
+                ผู้จัดทำ
+            </button>
         </div>
     </nav>
 
@@ -141,38 +237,41 @@
         <section id="home" class="page-section active fade-in">
             <div class="hero-bg h-screen flex items-center justify-center text-center px-4">
                 <div class="text-white max-w-3xl">
-                    <h1 class="text-5xl md:text-7xl font-extrabold mb-6 drop-shadow-lg">หลงรักป่าไทย</h1>
-                    <p class="text-xl md:text-2xl mb-8 font-light drop-shadow-md">ค้นพบเส้นทางเดินป่าที่สวยงามที่สุดในประเทศไทย ข้อมูลครบ จบในที่เดียว ทั้งระยะทาง เวลา และพิกัด</p>
+                    <h1 class="text-5xl md:text-7xl font-extrabold mb-6 drop-shadow-lg" data-key="hero_title">หลงรักป่าไทย</h1>
+                    <p class="text-xl md:text-2xl mb-8 font-light drop-shadow-md" data-key="hero_subtitle">
+                        ค้นพบเส้นทางเดินป่าที่สวยงามที่สุดในประเทศไทย ข้อมูลครบ จบในที่เดียว
+                    </p>
                     <button onclick="navigateTo('top10')" class="bg-green-600 hover:bg-green-700 text-white font-bold py-4 px-10 rounded-full transition transform hover:scale-105 shadow-lg flex items-center mx-auto gap-2">
-                        ดูเส้นทางแนะนำ <i class="fa-solid fa-arrow-right"></i>
+                        <span data-key="view_trails">ดูเส้นทางแนะนำ</span> <i class="fa-solid fa-arrow-right"></i>
                     </button>
                 </div>
             </div>
             
             <div class="py-16 bg-white">
                 <div class="max-w-7xl mx-auto px-4 text-center">
-                    <h2 class="text-3xl font-bold mb-10 text-gray-800">ทำไมต้องเดินป่าในไทย?</h2>
+                    <h2 class="text-3xl font-bold mb-2 text-gray-800" data-key="why_title">ทำไมต้องเดินป่าในไทย?</h2>
+                    <p class="text-gray-500 mb-10" data-key="why_subtitle">เหตุผลที่คุณควรออกเดินทาง</p>
                     <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
                         <div class="p-6">
                             <div class="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4 text-green-600">
                                 <i class="fa-solid fa-map-location-dot text-3xl"></i>
                             </div>
-                            <h3 class="text-xl font-bold mb-2">ข้อมูลครบถ้วน</h3>
-                            <p class="text-gray-600">บอกระยะทาง เวลาเดิน และพิกัด GPS แม่นยำ</p>
+                            <h3 class="text-xl font-bold mb-2" data-key="feat_1_title">ข้อมูลครบถ้วน</h3>
+                            <p class="text-gray-600" data-key="feat_1_desc">บอกระยะทาง เวลาเดิน และพิกัด GPS แม่นยำ</p>
                         </div>
                         <div class="p-6">
                             <div class="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4 text-green-600">
                                 <i class="fa-solid fa-person-hiking text-3xl"></i>
                             </div>
-                            <h3 class="text-xl font-bold mb-2">ความท้าทาย</h3>
-                            <p class="text-gray-600">มีเส้นทางตั้งแต่ระดับมือใหม่ จนถึงระดับโหดหิน</p>
+                            <h3 class="text-xl font-bold mb-2" data-key="feat_2_title">ความท้าทาย</h3>
+                            <p class="text-gray-600" data-key="feat_2_desc">มีเส้นทางตั้งแต่ระดับมือใหม่ จนถึงระดับโหดหิน</p>
                         </div>
                         <div class="p-6">
                             <div class="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4 text-green-600">
                                 <i class="fa-solid fa-tree text-3xl"></i>
                             </div>
-                            <h3 class="text-xl font-bold mb-2">ธรรมชาติบำบัด</h3>
-                            <p class="text-gray-600">หนีความวุ่นวาย มาสูดอากาศบริสุทธิ์ให้เต็มปอด</p>
+                            <h3 class="text-xl font-bold mb-2" data-key="feat_3_title">ธรรมชาติบำบัด</h3>
+                            <p class="text-gray-600" data-key="feat_3_desc">หนีความวุ่นวาย มาสูดอากาศบริสุทธิ์ให้เต็มปอด</p>
                         </div>
                     </div>
                 </div>
@@ -182,8 +281,8 @@
         <!-- PAGE: TOP 10 / LIST -->
         <section id="top10" class="page-section fade-in">
             <div class="bg-green-800 py-12 text-white text-center">
-                <h1 class="text-4xl font-bold">เส้นทางเดินป่าทั่วไทย</h1>
-                <p class="mt-4 text-green-200">รวมเส้นทางยอดฮิตและข้อมูลสำคัญที่คุณต้องรู้ก่อนออกเดินทาง</p>
+                <h1 class="text-4xl font-bold" data-key="top_title">เส้นทางเดินป่าทั่วไทย</h1>
+                <p class="mt-4 text-green-200" data-key="top_subtitle">รวบรวมเส้นทางยอดนิยมที่คุณไม่ควรพลาด</p>
             </div>
             <div class="max-w-7xl mx-auto px-4 py-12">
                 <div id="top10-container" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
@@ -195,21 +294,20 @@
         <!-- PAGE: CATEGORIES -->
         <section id="categories" class="page-section fade-in">
             <div class="bg-gray-800 py-12 text-white text-center">
-                <h1 class="text-4xl font-bold">ค้นหาตามหมวดหมู่</h1>
-                <p class="mt-4 text-gray-400">เลือกเส้นทางตามภูมิภาค หรือระดับความยากง่าย</p>
+                <h1 class="text-4xl font-bold" data-key="cat_title">ค้นหาตามหมวดหมู่</h1>
+                <p class="mt-4 text-gray-400" data-key="cat_subtitle">เลือกดูเส้นทางตามภูมิภาคหรือระดับความยาก</p>
             </div>
             
             <div class="max-w-7xl mx-auto px-4 py-8">
                 <!-- Filters -->
                 <div class="flex flex-wrap justify-center gap-4 mb-10">
-                    <button onclick="filterCategory('all')" class="cat-btn px-6 py-2 rounded-full border border-green-600 bg-green-600 text-white hover:shadow-lg transition">ทั้งหมด</button>
-                    <button onclick="filterCategory('north')" class="cat-btn px-6 py-2 rounded-full border border-green-600 text-green-700 hover:bg-green-600 hover:text-white transition">ภาคเหนือ</button>
-                    <button onclick="filterCategory('northeast')" class="cat-btn px-6 py-2 rounded-full border border-green-600 text-green-700 hover:bg-green-600 hover:text-white transition">ภาคอีสาน</button>
-                    <button onclick="filterCategory('west')" class="cat-btn px-6 py-2 rounded-full border border-green-600 text-green-700 hover:bg-green-600 hover:text-white transition">ภาคตะวันตก</button>
-                     <button onclick="filterCategory('east')" class="cat-btn px-6 py-2 rounded-full border border-green-600 text-green-700 hover:bg-green-600 hover:text-white transition">ภาคตะวันออก</button>
-                    <button onclick="filterCategory('south')" class="cat-btn px-6 py-2 rounded-full border border-green-600 text-green-700 hover:bg-green-600 hover:text-white transition">ภาคใต้</button>
-                    <button onclick="filterCategory('easy')" class="cat-btn px-6 py-2 rounded-full border border-yellow-500 text-yellow-700 hover:bg-yellow-500 hover:text-white transition">มือใหม่ (ง่าย)</button>
-                    <button onclick="filterCategory('hard')" class="cat-btn px-6 py-2 rounded-full border border-red-500 text-red-700 hover:bg-red-500 hover:text-white transition">สายลุย (ยาก)</button>
+                    <button onclick="filterCategory('all')" class="cat-btn px-6 py-2 rounded-full border border-green-600 bg-green-600 text-white hover:shadow-lg transition" data-key="filter_all">ทั้งหมด</button>
+                    <button onclick="filterCategory('north')" class="cat-btn px-6 py-2 rounded-full border border-green-600 text-green-700 hover:bg-green-600 hover:text-white transition" data-key="filter_north">ภาคเหนือ</button>
+                    <button onclick="filterCategory('northeast')" class="cat-btn px-6 py-2 rounded-full border border-green-600 text-green-700 hover:bg-green-600 hover:text-white transition" data-key="filter_northeast">ภาคอีสาน</button>
+                    <button onclick="filterCategory('west')" class="cat-btn px-6 py-2 rounded-full border border-green-600 text-green-700 hover:bg-green-600 hover:text-white transition" data-key="filter_west">ภาคตะวันตก</button>
+                     <button onclick="filterCategory('south')" class="cat-btn px-6 py-2 rounded-full border border-green-600 text-green-700 hover:bg-green-600 hover:text-white transition" data-key="filter_south">ภาคใต้</button>
+                    <button onclick="filterCategory('easy')" class="cat-btn px-6 py-2 rounded-full border border-yellow-500 text-yellow-700 hover:bg-yellow-500 hover:text-white transition" data-key="filter_easy">มือใหม่</button>
+                    <button onclick="filterCategory('hard')" class="cat-btn px-6 py-2 rounded-full border border-red-500 text-red-700 hover:bg-red-500 hover:text-white transition" data-key="filter_hard">สายลุย</button>
                 </div>
 
                 <div id="category-container" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
@@ -225,12 +323,12 @@
             <div class="absolute inset-0 flex items-center justify-center px-4 contact-content">
                 <div class="bg-white/10 backdrop-blur-lg border border-white/20 p-8 md:p-12 rounded-2xl shadow-2xl max-w-lg w-full text-center text-white profile-glow">
                     <div class="w-32 h-32 mx-auto mb-6 rounded-full overflow-hidden border-4 border-green-500 shadow-lg relative bg-gray-300">
-                        <img src="image/manud.jpg" alt="Creator" class="w-full h-full object-cover">
+                        <img src="image/manud.jpg" onerror="this.src='https://images.unsplash.com/photo-1438761681033-6461ffad8d80?ixlib=rb-4.0.3&auto=format&fit=crop&w=300&q=80'" alt="Creator" class="w-full h-full object-cover">
                     </div>
-                    <h2 class="text-3xl font-bold mb-2">ผู้จัดทำเว็บไซต์</h2>
+                    <h2 class="text-3xl font-bold mb-2" data-key="contact_title">ผู้จัดทำเว็บไซต์</h2>
                     <p class="text-green-300 font-medium mb-6">นางสาว กันต์กนิษฐ์ ส่งแสง</p>
                     
-                    <p class="text-gray-200 mb-8 leading-relaxed">
+                    <p class="text-gray-200 mb-8 leading-relaxed" data-key="contact_desc">
                         "เราสร้างเว็บไซต์นี้ขึ้นเพื่อรวบรวมข้อมูลที่เป็นประโยชน์สำหรับนักเดินป่าทุกคน หวังว่าคุณจะพบเส้นทางที่ถูกใจ และช่วยกันรักษาธรรมชาติให้สวยงามต่อไป"
                     </p>
                     <div class="text-left bg-black/20 p-4 rounded-lg mb-6 text-sm">
@@ -249,272 +347,710 @@
 
     </main>
 
+    <!-- DETAIL MODAL -->
+    <div id="detail-modal" class="fixed inset-0 z-[60] hidden flex items-center justify-center p-4">
+        <div class="absolute inset-0 bg-black/80 backdrop-blur-sm" onclick="closeModal()"></div>
+        <div class="bg-white w-full max-w-5xl max-h-[95vh] overflow-y-auto rounded-2xl shadow-2xl relative z-10 flex flex-col md:flex-row">
+            <button onclick="closeModal()" class="absolute top-4 right-4 z-20 bg-black/50 hover:bg-black/70 text-white rounded-full w-10 h-10 flex items-center justify-center transition">
+                <i class="fa-solid fa-xmark text-xl"></i>
+            </button>
+            
+            <div id="modal-content" class="w-full">
+                <!-- Content injected by JS -->
+            </div>
+        </div>
+    </div>
+
 
     <!-- JavaScript -->
     <script>
+        // --- TRANSLATIONS ---
+        const translations = {
+            th: {
+                home: 'หน้าแรก',
+                recommend: 'แนะนำเส้นทาง',
+                search: 'ค้นหา',
+                contact: 'ผู้จัดทำ',
+                hero_title: 'หลงรักป่าไทย',
+                hero_subtitle: 'ค้นพบเส้นทางเดินป่าที่สวยงามที่สุดในประเทศไทย ข้อมูลครบ จบในที่เดียว',
+                view_trails: 'ดูเส้นทางแนะนำ',
+                why_title: 'ทำไมต้องเดินป่าในไทย?',
+                why_subtitle: 'เหตุผลที่คุณควรออกเดินทาง',
+                feat_1_title: 'ข้อมูลครบถ้วน',
+                feat_1_desc: 'บอกระยะทาง เวลาเดิน และพิกัด GPS แม่นยำ',
+                feat_2_title: 'ความท้าทาย',
+                feat_2_desc: 'มีเส้นทางตั้งแต่ระดับมือใหม่ จนถึงระดับโหดหิน',
+                feat_3_title: 'ธรรมชาติบำบัด',
+                feat_3_desc: 'หนีความวุ่นวาย มาสูดอากาศบริสุทธิ์ให้เต็มปอด',
+                top_title: 'เส้นทางเดินป่าทั่วไทย',
+                top_subtitle: 'รวบรวมเส้นทางยอดนิยมที่คุณไม่ควรพลาด',
+                cat_title: 'ค้นหาตามหมวดหมู่',
+                cat_subtitle: 'เลือกดูเส้นทางตามภูมิภาคหรือระดับความยาก',
+                filter_all: 'ทั้งหมด',
+                filter_north: 'ภาคเหนือ',
+                filter_northeast: 'ภาคอีสาน',
+                filter_west: 'ภาคตะวันตก',
+                filter_south: 'ภาคใต้',
+                filter_easy: 'มือใหม่',
+                filter_hard: 'สายลุย',
+                contact_title: 'ผู้จัดทำเว็บไซต์',
+                contact_desc: '"เราสร้างเว็บไซต์นี้ขึ้นเพื่อรวบรวมข้อมูลที่เป็นประโยชน์สำหรับนักเดินป่าทุกคน หวังว่าคุณจะพบเส้นทางที่ถูกใจ และช่วยกันรักษาธรรมชาติให้สวยงามต่อไป"',
+                details_btn: 'ดูรายละเอียด',
+                no_data: 'ไม่พบข้อมูลในหมวดหมู่นี้',
+                province_label: 'จ.',
+                beauty: 'ความสวยงาม',
+                safety: 'ความปลอดภัย',
+                value: 'ความคุ้มค่า',
+                write_review: 'เขียนรีวิว',
+                submit: 'ส่งรีวิว',
+                comment_placeholder: 'แสดงความคิดเห็นของคุณที่นี่...',
+                name_placeholder: 'ชื่อของคุณ',
+                recent_reviews: 'ความคิดเห็นล่าสุด',
+                view_map: 'ดูแผนที่ (Google Maps)',
+                park_label: 'อุทยาน'
+            },
+            en: {
+                home: 'Home',
+                recommend: 'Recommended',
+                search: 'Search',
+                contact: 'Contact',
+                hero_title: 'Fall in Love with Thai Forests',
+                hero_subtitle: 'Discover the most beautiful hiking trails in Thailand. All info in one place.',
+                view_trails: 'View Trails',
+                why_title: 'Why hike in Thailand?',
+                why_subtitle: 'Reasons to start your journey',
+                feat_1_title: 'Complete Info',
+                feat_1_desc: 'Accurate distance, duration, and GPS coordinates.',
+                feat_2_title: 'Challenge',
+                feat_2_desc: 'Trails ranging from beginner friendly to extreme expert levels.',
+                feat_3_title: 'Nature Therapy',
+                feat_3_desc: 'Escape the chaos and breathe in the fresh air.',
+                top_title: 'Hiking Trails Across Thailand',
+                top_subtitle: 'Popular trails you should not miss.',
+                cat_title: 'Browse by Category',
+                cat_subtitle: 'Filter by region or difficulty level.',
+                filter_all: 'All',
+                filter_north: 'North',
+                filter_northeast: 'Northeast',
+                filter_west: 'West',
+                filter_south: 'South',
+                filter_easy: 'Easy/Beginner',
+                filter_hard: 'Hard/Expert',
+                contact_title: 'Website Creator',
+                contact_desc: '"We created this website to gather useful information for all hikers. We hope you find the perfect trail and help preserve nature."',
+                details_btn: 'Details',
+                no_data: 'No data found in this category.',
+                province_label: 'Prov.',
+                beauty: 'Beauty',
+                safety: 'Safety',
+                value: 'Value',
+                write_review: 'Write a Review',
+                submit: 'Submit Review',
+                comment_placeholder: 'Write your comment here...',
+                name_placeholder: 'Your Name',
+                recent_reviews: 'Recent Reviews',
+                view_map: 'View Map (Google Maps)',
+                park_label: 'National Park'
+            }
+        };
+
+        let currentLang = 'th';
+
         // --- DATA ---
-        // Images restored to local paths as requested
-        // Added 'mapUrl' field for custom Google Maps links
+        // Restored local image paths for gallery
         const hikingSpots = [
             {
                 id: 1,
-                name: "ภูกระดึง",
-                province: "เลย",
-                region: "northeast",
-                difficulty: "easy", 
-                diffLabel: "ปานกลาง",
-                distance: "9 กม.",
-                duration: "4-6 ชม.",
+                name: "ภูกระดึง", nameEn: "Phu Kradueng",
+                province: "เลย", provinceEn: "Loei", region: "northeast",
+                difficulty: "easy", diffLabel: { th: "ปานกลาง", en: "Moderate" },
+                distance: "9 km", duration: { th: "4-6 ชม.", en: "4-6 hr" },
                 coordinates: "16.884,101.734",
                 mapUrl: "https://www.google.com/maps/place/Phu+Kradueng/@16.8713886,101.7186111,15z/data=!3m1!4b1!4m6!3m5!1s0x31219f1b40065379:0x5911bd17e3544944!8m2!3d16.8713889!4d101.7186111!16s%2Fm%2F0hzq18b?entry=ttu&g_ep=EgoyMDI1MTIwOS4wIKXMDSoASAFQAw%3D%3D",
-                parkName: "อช.ภูกระดึง",
+                parkName: { th: "อช.ภูกระดึง", en: "Phu Kradueng NP" },
                 parkUrl: "https://portal.dnp.go.th/Content/nationalpark?contentId=945&utm_source=chatgpt.com",
-                desc: "ตำนานแห่งการเดินป่า จุดเริ่มต้นของใครหลายคน ไฮไลท์คือผาหล่มสักและใบเมเปิ้ลแดง",
-                image: "image/phukradueng.jpg"
+                desc_th: "ตำนานแห่งการเดินป่า จุดเริ่มต้นของใครหลายคน ไฮไลท์คือผาหล่มสักและใบเมเปิ้ลแดง",
+                desc_en: "The legendary hiking spot, a beginning for many hikers. Highlights include Pha Lom Sak cliff and red maple leaves.",
+                image: "image/phukradueng.jpg",
+                fallbackImage: "https://images.unsplash.com/photo-1596700813943-41c1955c4864?auto=format&fit=crop&w=800&q=80",
+                images: [
+                     "image/phukradueng.jpg",
+                     "image/phukradueng1.jpg",
+                     "image/phukradueng2.jpg",
+                     "image/phukradueng3.jpg",
+                     "image/phukradueng4.jpg"
+                ],
+                spreeRating: 4.8, spreeDetails: { beauty: 5, safety: 4.5, value: 5 },
+                reviews: [{ user: "Wichai T.", rating: 5, comment: "สวยงามมากครับ เหนื่อยแต่คุ้มค่ามาก" }]
             },
             {
                 id: 2,
-                name: "ดอยเชียงดาว",
-                province: "เชียงใหม่",
-                region: "north",
-                difficulty: "hard",
-                diffLabel: "ยาก",
-                distance: "8.5 กม.",
-                duration: "5-7 ชม.",
+                name: "ดอยเชียงดาว", nameEn: "Doi Chiang Dao",
+                province: "เชียงใหม่", provinceEn: "Chiang Mai", region: "north",
+                difficulty: "hard", diffLabel: { th: "ยาก", en: "Hard" },
+                distance: "8.5 km", duration: { th: "5-7 ชม.", en: "5-7 hr" },
                 coordinates: "19.395,98.887",
                 mapUrl: "https://www.google.com/maps/place/%E0%B9%80%E0%B8%82%E0%B8%95%E0%B8%A3%E0%B8%B1%E0%B8%81%E0%B8%A9%E0%B8%B2%E0%B8%9E%E0%B8%B1%E0%B8%99%E0%B8%98%E0%B8%B8%E0%B9%8C%E0%B8%AA%E0%B8%B1%E0%B8%95%E0%B8%A7%E0%B9%8C%E0%B8%9B%E0%B9%88%E0%B8%B2%E0%B9%80%E0%B8%8A%E0%B8%B5%E0%B8%A2%E0%B8%87%E0%B8%94%E0%B8%B2%E0%B8%A7/@19.399761,98.8560673,14z/data=!3m1!4b1!4m6!3m5!1s0x30d0a1ab30a3f0fb:0x39dbe1fff3ea3fcb!8m2!3d19.399722!4d98.876667!16s%2Fm%2F0j261lw!5m1!1e4?entry=ttu&g_ep=EgoyMDI1MTIwOS4wIKXMDSoKLDEwMDc5MjA2OUgBUAM%3D",
-                parkName: "ขสป.เชียงดาว",
+                parkName: { th: "ขสป.เชียงดาว", en: "Chiang Dao Wildlife Sanctuary" },
                 parkUrl: "https://thai.tourismthailand.org/Attraction/%E0%B8%94%E0%B8%AD%E0%B8%A2%E0%B8%AB%E0%B8%A5%E0%B8%A7%E0%B8%87%E0%B9%80%E0%B8%8A%E0%B8%B5%E0%B8%A2%E0%B8%87%E0%B8%94%E0%B8%B2%E0%B8%A7?utm_source=chatgpt.com",
-                desc: "ยอดเขาที่สูงเป็นอันดับ 3 ของไทย ชมพรรณไม้หายากและวิวดาวเต็มท้องฟ้า",
-                image: "image/DoiChiangDao.jpg"
+                desc_th: "ยอดเขาที่สูงเป็นอันดับ 3 ของไทย ชมพรรณไม้หายากและวิวดาวเต็มท้องฟ้า",
+                desc_en: "The 3rd highest peak in Thailand. Home to rare plants and a spectacular starry sky view.",
+                image: "image/DoiChiangDao.jpg",
+                fallbackImage: "https://images.unsplash.com/photo-1599824634289-49175375294a?auto=format&fit=crop&w=800&q=80",
+                images: [
+                    "image/DoiChiangDao.jpg",
+                    "image/DoiChiangDao1.jpg",
+                    "image/DoiChiangDao2.jpg",
+                    "image/DoiChiangDao3.jpg",
+                    "image/DoiChiangDao4.jpg"
+                ],
+                spreeRating: 4.9, spreeDetails: { beauty: 5, safety: 4, value: 5 },
+                reviews: [{ user: "Nadech", rating: 5, comment: "ดาวสวยสมชื่อครับ ทางโหดนิดหน่อยแต่สนุกมาก" }]
             },
             {
                 id: 3,
-                name: "เขาเหมน",
-                province: "นครศรีธรรมราช",
-                region: "south",
-                difficulty: "easy",
-                diffLabel: "ปานกลาง",
-                distance: "~4 กม.",
-                duration: "3-5 ชม.",
+                name: "เขาเหมน", nameEn: "Khao Men",
+                province: "นครศรีธรรมราช", provinceEn: "Nakhon Si Thammarat", region: "south",
+                difficulty: "easy", diffLabel: { th: "ปานกลาง", en: "Moderate" },
+                distance: "~4 km", duration: { th: "3-5 ชม.", en: "3-5 hr" },
                 coordinates: "8.299,99.663",
                 mapUrl: "https://www.google.com/maps/place/%E0%B8%A2%E0%B8%AD%E0%B8%94%E0%B9%80%E0%B8%82%E0%B8%B2%E0%B9%80%E0%B8%AB%E0%B8%A1%E0%B8%99/@8.299,99.663,17z/data=!4m12!1m5!3m4!2zOMKwMTcnNTYuNCJOIDk5wrAzOSc0Ni44IkU!8m2!3d8.299!4d99.663!3m5!1s0x30524d71ada1f183:0xfa5c521526d3736d!8m2!3d8.2971071!4d99.663294!16s%2Fg%2F11h2kbmh78!5m1!1e4?entry=ttu&g_ep=EgoyMDI1MTIwOS4wIKXMDSoKLDEwMDc5MjA2OUgBUAM%3D",
-                parkName: "อช.น้ำตกโยง",
+                parkName: { th: "อช.น้ำตกโยง", en: "Namtok Yong NP" },
                 parkUrl: "https://portal.dnp.go.th/Content/nationalpark?contentId=2980&utm_source=chatgpt.com",
-                desc: "ชมวิวทะเลหมอก 360 องศา สวยแบบตะโกน ฉายาฟูจิยาม่าเมืองไทย",
-                image: "image/khaoHem.jpg"
+                desc_th: "ชมวิวทะเลหมอก 360 องศา สวยแบบตะโกน ฉายาฟูจิยาม่าเมืองไทย",
+                desc_en: "360-degree sea of mist view. Known as the Fujiyama of Thailand.",
+                image: "image/khaoHem.jpg",
+                fallbackImage: "https://images.unsplash.com/photo-1590494578135-26597793540e?auto=format&fit=crop&w=800&q=80",
+                images: [
+                    "image/khaoHem.jpg",
+                    "image/khaoHem1.jpg",
+                    "image/khaoHem2.jpg",
+                    "image/khaoHem3.jpg",
+                    "image/khaoHem4.jpg"
+                ],
+                spreeRating: 4.6, spreeDetails: { beauty: 4.8, safety: 4.5, value: 4.5 },
+                reviews: []
             },
             {
                 id: 4,
-                name: "ภูชี้ฟ้า",
-                province: "เชียงราย",
-                region: "north",
-                difficulty: "easy",
-                diffLabel: "ง่าย",
-                distance: "760 ม.",
-                duration: "20-30 นาที",
+                name: "ภูชี้ฟ้า", nameEn: "Phu Chi Fa",
+                province: "เชียงราย", provinceEn: "Chiang Rai", region: "north",
+                difficulty: "easy", diffLabel: { th: "ง่าย", en: "Easy" },
+                distance: "760 m", duration: { th: "20-30 นาที", en: "20-30 min" },
                 coordinates: "19.851,100.453",
                 mapUrl: "https://www.google.com/maps/place/19.851,100.453",
-                parkName: "อช.ภูชี้ฟ้า",
+                parkName: { th: "อช.ภูชี้ฟ้า", en: "Phu Chi Fa NP" },
                 parkUrl: "https://www.tourismthailand.org/Attraction/phu-chi-fa-national-park?utm_source=chatgpt.com",
-                desc: "เดินง่าย วิวอลังการ ชมทะเลหมอกและพระอาทิตย์ขึ้นที่สวยที่สุดแห่งหนึ่ง",
-                image: "image/phuchifa.jpg"
+                desc_th: "เดินง่าย วิวอลังการ ชมทะเลหมอกและพระอาทิตย์ขึ้นที่สวยที่สุดแห่งหนึ่ง",
+                desc_en: "Easy walk, magnificent view. One of the best spots for sea of mist and sunrise.",
+                image: "image/phuchifa.jpg",
+                fallbackImage: "https://images.unsplash.com/photo-1531128543472-7c703b0c6110?auto=format&fit=crop&w=800&q=80",
+                images: [
+                    "image/phuchifa.jpg",
+                    "image/phuchifa1.jpg",
+                    "image/phuchifa2.jpg",
+                    "image/phuchifa3.jpg",
+                    "image/phuchifa4.jpg"
+                ],
+                spreeRating: 4.7, spreeDetails: { beauty: 5, safety: 5, value: 4 },
+                reviews: [{ user: "Alice", rating: 5, comment: "Sunrise is breathtaking!" }]
             },
             {
                 id: 5,
-                name: "ภูสอยดาว",
-                province: "อุตรดิตถ์",
-                region: "north",
-                difficulty: "hard",
-                diffLabel: "ยาก",
-                distance: "6.5 กม.",
-                duration: "4-6 ชม.",
+                name: "ภูสอยดาว", nameEn: "Phu Soi Dao",
+                province: "อุตรดิตถ์", provinceEn: "Uttaradit", region: "north",
+                difficulty: "hard", diffLabel: { th: "ยาก", en: "Hard" },
+                distance: "6.5 km", duration: { th: "4-6 ชม.", en: "4-6 hr" },
                 coordinates: "17.696,100.950",
                 mapUrl: "https://www.google.com/maps/place/%E0%B8%A0%E0%B8%B9%E0%B8%AA%E0%B8%AD%E0%B8%A2%E0%B8%94%E0%B8%B2%E0%B8%A7/@18.1219444,99.7686577,9z/data=!4m10!1m2!2m1!1z4Lig4Li54Liq4Lit4Lii4LiU4Liy4Lin!3m6!1s0x31276a70cdce3463:0x9890c3b43fae69c3!8m2!3d18.1219444!4d100.9222222!15sChjguKDguLnguKrguK3guKLguJTguLLguKeSAQRwZWFr4AEA!16s%2Fg%2F12qg8yqrv?entry=ttu&g_ep=EgoyMDI1MTIwOS4wIKXMDSoASAFQAw%3D%3D",
-                parkName: "อช.ภูสอยดาว",
+                parkName: { th: "อช.ภูสอยดาว", en: "Phu Soi Dao NP" },
                 parkUrl: "https://portal.dnp.go.th/Content/nationalpark?contentId=991&utm_source=chatgpt.com",
-                desc: "ลานสนสามใบที่ใหญ่ที่สุดในไทย และทุ่งดอกหงอนนาคสีม่วงช่วงหน้าฝน",
-                image: "image/phusoiDao.jpg"
+                desc_th: "ลานสนสามใบที่ใหญ่ที่สุดในไทย และทุ่งดอกหงอนนาคสีม่วงช่วงหน้าฝน",
+                desc_en: "Largest pine forest in Thailand and purple flower fields during the rainy season.",
+                image: "image/phusoiDao.jpg",
+                fallbackImage: "https://images.unsplash.com/photo-1586786047249-1457816d8234?auto=format&fit=crop&w=800&q=80",
+                images: [
+                    "image/phusoiDao.jpg",
+                    "image/phusoiDao1.jpg",
+                    "image/phusoiDao2.jpg",
+                    "image/phusoiDao3.jpg",
+                    "image/phusoiDao4.jpg"
+                ],
+                spreeRating: 4.8, spreeDetails: { beauty: 5, safety: 4, value: 5 },
+                reviews: []
             },
             {
                 id: 6,
-                name: "ดอยลังกาหลวง",
-                province: "เชียงราย",
-                region: "north",
-                difficulty: "hard",
-                diffLabel: "ยาก (ชัน)",
-                distance: "~17 กม.",
-                duration: "2 วัน 1 คืน",
+                name: "ดอยลังกาหลวง", nameEn: "Doi Langka Luang",
+                province: "เชียงราย", provinceEn: "Chiang Rai", region: "north",
+                difficulty: "hard", diffLabel: { th: "ยาก (ชัน)", en: "Hard (Steep)" },
+                distance: "~17 km", duration: { th: "2 วัน 1 คืน", en: "2D/1N" },
                 coordinates: "19.153,99.467",
                 mapUrl: "https://www.google.com/maps/dir//2C24%2BW39+%E0%B8%94%E0%B8%AD%E0%B8%A2%E0%B8%A5%E0%B8%B1%E0%B8%87%E0%B8%81%E0%B8%B2%E0%B8%AB%E0%B8%A5%E0%B8%A7%E0%B8%87+2,031+%E0%B8%A1.+%E0%B9%80%E0%B8%A1%E0%B8%B7%E0%B8%AD%E0%B8%87%E0%B8%99%E0%B9%89%E0%B8%AD%E0%B8%A2+%E0%B8%95%E0%B8%B3%E0%B8%9A%E0%B8%A5+%E0%B9%81%E0%B8%A1%E0%B9%88%E0%B9%80%E0%B8%88%E0%B8%94%E0%B8%B5%E0%B8%A2%E0%B9%8C%E0%B9%83%E0%B8%AB%E0%B8%A1%E0%B9%88+%E0%B8%AD%E0%B8%B3%E0%B9%80%E0%B8%A0%E0%B8%AD%E0%B9%80%E0%B8%A7%E0%B8%B5%E0%B8%A2%E0%B8%87%E0%B8%9B%E0%B9%88%E0%B8%B2%E0%B9%80%E0%B8%9B%E0%B9%89%E0%B8%B2+%E0%B9%80%E0%B8%8A%E0%B8%B5%E0%B8%A2%E0%B8%87%E0%B8%A3%E0%B8%B2%E0%B8%A2+57260/@18.9840789,99.3722965,14z/data=!4m17!1m8!3m7!1s0x30d9ed000bf1229b:0x30c9230e2654c5d0!2z4LiU4Lit4Lii4Lil4Lix4LiH4LiB4Liy4Lir4Lil4Lin4LiHIDIsMDMxIOC4oS4!8m2!3d19.0022778!4d99.4052464!15sCj3guJTguK3guKLguKXguLHguIfguIHguLLguKvguKXguKfguIcg4LmA4LiK4Li14Lii4LiH4Lij4Liy4LiikgELaGlraW5nX2FyZWHgAQA!16s%2Fg%2F11zhz5ps49!4m7!1m0!1m5!1m1!1s0x30d9ed000bf1229b:0x30c9230e2654c5d0!2m2!1d99.4052464!2d19.0022778!5m1!1e4?entry=ttu&g_ep=EgoyMDI1MTIwOS4wIKXMDSoKLDEwMDc5MjA2OUgBUAM%3D",
-                parkName: "อช.ขุนแจ",
+                parkName: { th: "อช.ขุนแจ", en: "Khun Chae NP" },
                 parkUrl: "https://en.wikipedia.org/wiki/Doi_Mae_Tho?utm_source=chatgpt.com",
-                desc: "เส้นทางท้าทายในอุทยานแห่งชาติขุนแจ เดินสันเขาชมวิวป่าดิบเขา",
-                image: "image/kanjjjj.jpg"
+                desc_th: "เส้นทางท้าทายในอุทยานแห่งชาติขุนแจ เดินสันเขาชมวิวป่าดิบเขา",
+                desc_en: "Challenging route in Khun Chae National Park. Ridge walking with rainforest views.",
+                image: "image/kanjjjj.jpg",
+                fallbackImage: "https://images.unsplash.com/photo-1593427508499-1d42b10a2219?auto=format&fit=crop&w=800&q=80",
+                images: [
+                    "image/kanjjjj.jpg",
+                    "image/kanjjjj1.jpg",
+                    "image/kanjjjj2.jpg",
+                    "image/kanjjjj3.jpg",
+                    "image/kanjjjj4.jpg"
+                ],
+                spreeRating: 4.5, spreeDetails: { beauty: 4.5, safety: 4, value: 5 },
+                reviews: []
             },
             {
-                id: 7,
-                name: "เขาพะเนินทุ่ง",
-                province: "เพชรบุรี",
-                region: "west",
-                difficulty: "easy",
-                diffLabel: "ง่าย (รถถึง)",
-                distance: "จุดชมวิว",
-                duration: "1-2 ชม.",
-                coordinates: "12.825,99.363",
+                id: 7, 
+                name: "เขาพะเนินทุ่ง", nameEn: "Khao Phanoen Thung", 
+                province: "เพชรบุรี", provinceEn: "Phetchaburi", region: "west", 
+                difficulty: "easy", diffLabel: { th: "ง่าย (รถถึง)", en: "Easy (Car access)" }, 
+                distance: "Viewpoint", duration: { th: "1-2 ชม.", en: "1-2 hr" }, coordinates: "12.825,99.363", 
                 mapUrl: "https://www.google.com/maps/place/Khao+Phanoen+Thung/@12.867499,99.3516226,14z/data=!3m1!4b1!4m6!3m5!1s0x30fc907e02a6e48d:0xf75a61873ba31ed5!8m2!3d12.8675!4d99.3722222!16s%2Fg%2F12lrz173d!5m1!1e4?entry=ttu&g_ep=EgoyMDI1MTIwOS4wIKXMDSoKLDEwMDc5MjA2OUgBUAM%3D",
-                parkName: "อช.แก่งกระจาน",
+                parkName: { th: "อช.แก่งกระจาน", en: "Kaeng Krachan NP" },
                 parkUrl: "https://portal.dnp.go.th/Content/nationalpark?contentId=1157&utm_source=chatgpt.com",
-                desc: "ชมทะเลหมอกใกล้กรุง ขับรถขึ้นไปชมวิวได้ หรือเดินป่าเส้นทางน้ำตกทอทิพย์",
-                image: "image/khaophanoen.jpg"
+                desc_th: "ชมทะเลหมอกใกล้กรุง ขับรถขึ้นไปชมวิวได้ หรือเดินป่าเส้นทางน้ำตกทอทิพย์",
+                desc_en: "Sea of mist near Bangkok. Accessible by car or hike to Tho Thip waterfall.",
+                image: "image/khaophanoen.jpg",
+                fallbackImage: "https://images.unsplash.com/photo-1597813580455-139369324888?auto=format&fit=crop&w=800&q=80",
+                images: [
+                    "image/khaophanoen.jpg",
+                    "image/khaophanoen1.jpg", 
+                    "image/khaophanoen2.jpg", 
+                    "image/khaophanoen3.jpg", 
+                    "image/khaophanoen4.jpg"
+                ],
+                spreeRating: 4.6, spreeDetails: { beauty: 4.8, safety: 5, value: 4 }, reviews: []
             },
             {
-                id: 8,
-                name: "กิ่วแม่ปาน",
-                province: "เชียงใหม่",
-                region: "north",
-                difficulty: "easy",
-                diffLabel: "ง่าย",
-                distance: "3.2 กม.",
-                duration: "2-3 ชม.",
-                coordinates: "18.556,98.482",
+                id: 8, name: "กิ่วแม่ปาน", nameEn: "Kew Mae Pan", 
+                province: "เชียงใหม่", provinceEn: "Chiang Mai", region: "north", 
+                difficulty: "easy", diffLabel: { th: "ง่าย", en: "Easy" }, 
+                distance: "3.2 km", duration: { th: "2-3 ชม.", en: "2-3 hr" }, coordinates: "18.556,98.482", 
                 mapUrl: "https://www.google.com/maps/place/%E0%B8%81%E0%B8%B4%E0%B9%88%E0%B8%A7%E0%B9%81%E0%B8%A1%E0%B9%88%E0%B8%9B%E0%B8%B2%E0%B8%99/@18.5616663,98.4758333,15z/data=!3m1!4b1!4m6!3m5!1s0x30db0085b461a09b:0x4652ff05b8e5b1a3!8m2!3d18.5616667!4d98.4758333!16s%2Fg%2F12lsl_2ww!5m1!1e4?entry=ttu&g_ep=EgoyMDI1MTIwOS4wIKXMDSoASAFQAw%3D%3D",
-                parkName: "อช.ดอยอินทนนท์",
+                parkName: { th: "อช.ดอยอินทนนท์", en: "Doi Inthanon NP" },
                 parkUrl: "https://portal.dnp.go.th/Content/nationalpark?contentId=1946&utm_source=chatgpt.com",
-                desc: "เส้นทางศึกษาธรรมชาติยอดฮิต บนยอดดอยสูงสุดแดนสยาม ป่าเมฆเมืองไทย",
-                image: "image/Kiumaepan.jpg"
+                desc_th: "เส้นทางศึกษาธรรมชาติยอดฮิต บนยอดดอยสูงสุดแดนสยาม ป่าเมฆเมืองไทย",
+                desc_en: "Popular nature trail on Thailand's highest peak. The Cloud Forest of Thailand.",
+                image: "image/Kiumaepan.jpg",
+                fallbackImage: "https://images.unsplash.com/photo-1549816280-99c542c3d052?auto=format&fit=crop&w=800&q=80",
+                images: [
+                    "image/Kiumaepan.jpg",
+                    "image/Kiumaepan1.jpg", 
+                    "image/Kiumaepan2.jpg", 
+                    "image/Kiumaepan3.jpg", 
+                    "image/Kiumaepan4.jpg"
+                ],
+                spreeRating: 4.9, spreeDetails: { beauty: 5, safety: 5, value: 4.8 }, reviews: []
             },
-            {
+             {
                 id: 9,
-                name: "ผาแต้ม",
-                province: "อุบลราชธานี",
-                region: "northeast",
-                difficulty: "easy",
-                diffLabel: "ปานกลาง",
-                distance: "3.5 กม.",
-                duration: "2-3 ชม.",
+                name: "ผาแต้ม", nameEn: "Pha Taem",
+                province: "อุบลราชธานี", provinceEn: "Ubon Ratchathani", region: "northeast",
+                difficulty: "easy", diffLabel: { th: "ปานกลาง", en: "Moderate" },
+                distance: "3.5 km", duration: { th: "2-3 ชม.", en: "2-3 hr" },
                 coordinates: "15.399,105.510",
                 mapUrl: "https://www.google.com/maps/place/%E0%B8%AD%E0%B8%B8%E0%B8%97%E0%B8%A2%E0%B8%B2%E0%B8%99%E0%B9%81%E0%B8%AB%E0%B9%88%E0%B8%87%E0%B8%8A%E0%B8%B2%E0%B8%95%E0%B8%B4%E0%B8%9C%E0%B8%B2%E0%B9%81%E0%B8%95%E0%B9%89%E0%B8%A1/@15.3987509,105.5049507,17z/data=!3m1!4b1!4m6!3m5!1s0x3115a33294351715:0xcd2bb33dcf86f557!8m2!3d15.3987457!4d105.5075256!16s%2Fm%2F05f8t8k!5m1!1e4?entry=ttu&g_ep=EgoyMDI1MTIwOS4wIKXMDSoKLDEwMDc5MjA2OUgBUAM%3D",
-                parkName: "อช.ผาแต้ม",
+                parkName: { th: "อช.ผาแต้ม", en: "Pha Taem NP" },
                 parkUrl: "https://en.wikipedia.org/wiki/Pha_Taem_National_Park?utm_source=chatgpt.com",
-                desc: "ชมภาพเขียนสีประวัติศาสตร์ และจุดชมพระอาทิตย์แสงแรกแห่งสยาม",
-                image: "image/Cutthepoints.jpg"
+                desc_th: "ชมภาพเขียนสีประวัติศาสตร์ และจุดชมพระอาทิตย์แสงแรกแห่งสยาม",
+                desc_en: "Historical rock paintings and the spot to see the first sunrise of Siam.",
+                image: "image/Cutthepoints.jpg",
+                fallbackImage: "image/Cutthepoints5.jpg",
+                images: [
+                    "image/Cutthepoints.jpg",
+                    "image/Cutthepoints1.jpg",
+                    "image/Cutthepoints2.jpg",
+                    "image/Cutthepoints3.jpg",
+                    "image/Cutthepoints4.jpg"
+                ],
+                spreeRating: 4.4, spreeDetails: { beauty: 4.5, safety: 4, value: 4.5 }, reviews: []
             },
             {
                 id: 10,
-                name: "ดอยผ้าห่มปก",
-                province: "เชียงใหม่",
-                region: "north",
-                difficulty: "easy",
-                diffLabel: "ปานกลาง",
-                distance: "3.5 กม.",
-                duration: "2 ชม.",
+                name: "ดอยผ้าห่มปก", nameEn: "Doi Pha Hom Pok",
+                province: "เชียงใหม่", provinceEn: "Chiang Mai", region: "north",
+                difficulty: "easy", diffLabel: { th: "ปานกลาง", en: "Moderate" },
+                distance: "3.5 km", duration: { th: "2 ชม.", en: "2 hr" },
                 coordinates: "20.043,99.143",
                 mapUrl: "https://www.google.com/maps/place/%E0%B8%AD%E0%B8%B8%E0%B8%97%E0%B8%A2%E0%B8%B2%E0%B8%99%E0%B9%81%E0%B8%AB%E0%B9%88%E0%B8%87%E0%B8%8A%E0%B8%B2%E0%B8%95%E0%B8%B4%E0%B8%94%E0%B8%AD%E0%B8%A2%E0%B8%9C%E0%B9%89%E0%B8%B2%E0%B8%AB%E0%B9%88%E0%B8%A1%E0%B8%9B%E0%B8%81/@19.9966004,99.144325,17z/data=!3m1!4b1!4m6!3m5!1s0x30d0d305833241c1:0x6a62de06b50561d9!8m2!3d19.9966004!4d99.144325!16s%2Fm%2F0j29l00!5m1!1e4?entry=ttu&g_ep=EgoyMDI1MTIwOS4wIKXMDSoKLDEwMDc5MjA2OUgBUAM%3D",
-                parkName: "อช.ดอยผ้าห่มปก",
+                parkName: { th: "อช.ดอยผ้าห่มปก", en: "Doi Pha Hom Pok NP" },
                 parkUrl: "https://portal.dnp.go.th/Content/nationalpark?contentId=908&utm_source=chatgpt.com",
-                desc: "จุดกางเต็นท์ที่สูงที่สุดในประเทศไทย ชมพระอาทิตย์ขึ้นสุดอลังการ",
-                image: "image/DoiPhamapok.jpg"
+                desc_th: "จุดกางเต็นท์ที่สูงที่สุดในประเทศไทย ชมพระอาทิตย์ขึ้นสุดอลังการ",
+                desc_en: "Thailand's highest campsite. Spectacular sunrise views over the mountains.",
+                image: "image/DoiPhamapok.jpg",
+                fallbackImage: "https://images.unsplash.com/photo-1542475143-4ee1104e9c70?auto=format&fit=crop&w=800&q=80",
+                images: [
+                    "image/DoiPhamapok.jpg",
+                    "image/DoiPhamapok1.jpg",
+                    "image/DoiPhamapok2.jpg",
+                    "image/DoiPhamapok3.jpg",
+                    "image/DoiPhamapok4.jpg"
+                ],
+                spreeRating: 4.7, spreeDetails: { beauty: 5, safety: 4.5, value: 4.5 }, reviews: []
             },
             {
                 id: 11,
-                name: "เขาช้างเผือก",
-                province: "กาญจนบุรี",
-                region: "west",
-                difficulty: "hard",
-                diffLabel: "ยาก (สันคมมีด)",
-                distance: "8 กม.",
-                duration: "4-5 ชม.",
+                name: "เขาช้างเผือก", nameEn: "Khao Chang Phueak",
+                province: "กาญจนบุรี", provinceEn: "Kanchanaburi", region: "west",
+                difficulty: "hard", diffLabel: { th: "ยาก (สันคมมีด)", en: "Hard (Knife Edge)" },
+                distance: "8 km", duration: { th: "4-5 ชม.", en: "4-5 hr" },
                 coordinates: "14.686,98.353",
                 mapUrl: "https://www.google.com/maps/place/%E0%B9%80%E0%B8%82%E0%B8%B2%E0%B8%8A%E0%B9%89%E0%B8%B2%E0%B8%87%E0%B9%80%E0%B8%9C%E0%B8%B7%E0%B8%AD%E0%B8%81+%E0%B8%9B%E0%B8%B4%E0%B8%A5%E0%B9%8A%E0%B8%AD%E0%B8%81+%E0%B8%AD%E0%B8%B3%E0%B9%80%E0%B8%A0%E0%B8%AD%E0%B8%97%E0%B8%AD%E0%B8%87%E0%B8%9C%E0%B8%B2%E0%B8%A0%E0%B8%B9%E0%B8%A1%E0%B8%B4+%E0%B8%81%E0%B8%B2%E0%B8%8D%E0%B8%88%E0%B8%99%E0%B8%9A%E0%B8%B8%E0%B8%A3%E0%B8%B5+71180/data=!4m2!3m1!1s0x30e5d18f74828995:0xa7d443330bcdf49f!5m1!1e4?sa=X&ved=1t:242&ictx=111",
-                parkName: "อช.ทองผาภูมิ",
+                parkName: { th: "อช.ทองผาภูมิ", en: "Thong Pha Phum NP" },
                 parkUrl: "https://portal.dnp.go.th/Content/nationalpark?contentId=17811&utm_source=chatgpt.com",
-                desc: "วัดใจบนสันคมมีด เสียวแต่สวย เส้นทางในฝันของนักเดินป่าสายลุย",
-                image: "image/khaoChangPhueak.jpg" 
+                desc_th: "วัดใจบนสันคมมีด เสียวแต่สวย เส้นทางในฝันของนักเดินป่าสายลุย",
+                desc_en: "Test your will on the 'Knife Blade Ridge'. Thrilling and beautiful dream destination for hikers.",
+                image: "image/khaoChangPhueak.jpg",
+                fallbackImage: "image/khaoChangPhueak5.jpg",
+                images: [
+                    "image/khaoChangPhueak.jpg",
+                    "image/khaoChangPhueak1.jpg",
+                    "image/khaoChangPhueak2.jpg",
+                    "image/khaoChangPhueak3.jpg",
+                    "image/khaoChangPhueak4.jpg"
+                ],
+                spreeRating: 4.8, spreeDetails: { beauty: 5, safety: 3, value: 5 }, reviews: []
             },
             {
                 id: 12,
-                name: "เขาหลวง",
-                province: "นครศรีธรรมราช",
-                region: "south",
-                difficulty: "hard",
-                diffLabel: "โหด",
-                distance: "~12 กม.",
-                duration: "3 วัน 2 คืน",
+                name: "เขาหลวง", nameEn: "Khao Luang",
+                province: "นครศรีธรรมราช", provinceEn: "Nakhon Si Thammarat", region: "south",
+                difficulty: "hard", diffLabel: { th: "โหด", en: "Extreme" },
+                distance: "~12 km", duration: { th: "3 วัน 2 คืน", en: "3D/2N" },
                 coordinates: "8.500,99.733",
                 mapUrl: "https://www.google.com/maps/place/Khao+Luang/@8.4941664,99.73,15z/data=!3m1!4b1!4m6!3m5!1s0x3053afd34bbb6d79:0xdec6071e305ef61e!8m2!3d8.4941666!4d99.73!16s%2Fm%2F02vxgjz!5m1!1e4?entry=ttu&g_ep=EgoyMDI1MTIwOS4wIKXMDSoASAFQAw%3D%3D",
-                parkName: "อช.เขาหลวง",
+                parkName: { th: "อช.เขาหลวง", en: "Khao Luang NP" },
                 parkUrl: "https://portal.dnp.go.th/Content/nationalpark?contentId=938&utm_source=chatgpt.com",
-                desc: "หลังคาแห่งภาคใต้ ป่าดิบชื้นที่สมบูรณ์ที่สุด ท้าทายด้วยความชันและความชื้น",
-                image: "image/khaoLuang.jpg" 
-            },
-        
+                desc_th: "หลังคาแห่งภาคใต้ ป่าดิบชื้นที่สมบูรณ์ที่สุด ท้าทายด้วยความชันและความชื้น",
+                desc_en: "The roof of the South. Most pristine rainforest. Challenging due to steepness and humidity.",
+                image: "image/khaoLuang.jpg",
+                fallbackImage: "https://images.unsplash.com/photo-1614918712399-5211933c023d?auto=format&fit=crop&w=800&q=80",
+                images: [
+                    "image/khaoLuang.jpg",
+                    "image/khaoLuang1.jpg",
+                    "image/khaoLuang2.jpg",
+                    "image/khaoLuang3.jpg",
+                    "image/khaoLuang4.jpg"
+                ],
+                spreeRating: 4.9, spreeDetails: { beauty: 5, safety: 3.5, value: 5 }, 
+                reviews: [{ user: "Surachai", rating: 5, comment: "ป่าสมบูรณ์มากครับ ทากดุสมคำร่ำลือ แต่วิวคุ้มค่าเหนื่อย" }]
+            }
         ];
+
+        // --- LANGUAGE FUNCTION ---
+        function changeLanguage(lang) {
+            currentLang = lang;
+            
+            // Update Toggle UI
+            const btnTh = document.getElementById('btn-th');
+            const btnEn = document.getElementById('btn-en');
+            const btnThM = document.getElementById('btn-th-m');
+            const btnEnM = document.getElementById('btn-en-m');
+
+            if(lang === 'th') {
+                btnTh.className = "px-3 py-1 rounded-full text-xs font-bold bg-green-600 text-white transition";
+                btnEn.className = "px-3 py-1 rounded-full text-xs font-bold text-gray-500 hover:text-green-600 transition";
+                btnThM.className = "px-2 py-1 rounded-full text-xs font-bold bg-green-600 text-white transition";
+                btnEnM.className = "px-2 py-1 rounded-full text-xs font-bold text-gray-500 transition";
+            } else {
+                btnTh.className = "px-3 py-1 rounded-full text-xs font-bold text-gray-500 hover:text-green-600 transition";
+                btnEn.className = "px-3 py-1 rounded-full text-xs font-bold bg-green-600 text-white transition";
+                btnThM.className = "px-2 py-1 rounded-full text-xs font-bold text-gray-500 transition";
+                btnEnM.className = "px-2 py-1 rounded-full text-xs font-bold bg-green-600 text-white transition";
+            }
+
+            // Update Static Text
+            document.querySelectorAll('[data-key]').forEach(el => {
+                const key = el.getAttribute('data-key');
+                if(translations[lang][key]) {
+                    el.innerText = translations[lang][key];
+                }
+            });
+
+            // Update Dynamic Content (Cards)
+            renderTop10();
+            renderCategories(); 
+        }
 
         // --- RENDER FUNCTIONS ---
         
-        // Render Top 10 Section (Now shows all recommendations)
         function renderTop10() {
             const container = document.getElementById('top10-container');
             container.innerHTML = '';
             
-            // Show all spots for the main list, or limit if desired. Showing all for better value.
             hikingSpots.forEach((spot, index) => {
                 const card = createCard(spot, index + 1);
                 container.innerHTML += card;
             });
         }
 
-        // Helper to create card HTML
         function createCard(spot, index) {
             const badgeColor = spot.difficulty === 'hard' ? 'bg-red-100 text-red-800' : spot.difficulty === 'easy' ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800';
             const indexBadge = index ? `<div class="absolute top-0 left-0 bg-yellow-400 text-yellow-900 font-bold px-3 py-1 rounded-br-lg z-10 shadow-md">#${index}</div>` : '';
             
-            // Map link - Now using the custom mapUrl field
+            // Pick Language Text
+            const description = currentLang === 'th' ? spot.desc_th : spot.desc_en;
+            const difficultyLabel = currentLang === 'th' ? spot.diffLabel.th : spot.diffLabel.en;
+            const btnText = translations[currentLang].details_btn;
+            const provText = translations[currentLang].province_label;
+            const name = currentLang === 'th' ? spot.name : spot.nameEn;
+            const nameSub = currentLang === 'th' ? spot.nameEn : spot.name;
+            const provinceName = currentLang === 'th' ? spot.province : spot.provinceEn;
+            const durationText = currentLang === 'th' ? spot.duration.th : spot.duration.en;
+
+            // Map & Park Link Logic
             const mapLink = spot.mapUrl || `https://www.google.com/maps/search/?api=1&query=${spot.coordinates}`;
+            const parkLink = spot.parkUrl || "#";
+            const parkName = currentLang === 'th' ? spot.parkName.th : spot.parkName.en;
 
             return `
                 <div class="hiking-card bg-white rounded-xl shadow-lg overflow-hidden border border-gray-100 flex flex-col h-full relative group">
                     ${indexBadge}
-                    <div class="h-52 overflow-hidden relative">
-                        <img src="${spot.image}" alt="${spot.name}" class="w-full h-full object-cover transition duration-700 group-hover:scale-110">
+                    <div class="h-52 overflow-hidden relative cursor-pointer" onclick="openModal(${spot.id})">
+                        <!-- Added onerror fallback for local images -->
+                        <img src="${spot.image}" onerror="this.src='${spot.fallbackImage}'" alt="${name}" class="w-full h-full object-cover transition duration-700 group-hover:scale-110">
                         <div class="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-60"></div>
                         <div class="absolute bottom-3 left-3 text-white">
-                            <h3 class="text-2xl font-bold drop-shadow-md">${spot.name}</h3>
-                            <p class="text-sm opacity-90"><i class="fa-solid fa-location-dot text-red-400 mr-1"></i> จ.${spot.province}</p>
+                            <h3 class="text-2xl font-bold drop-shadow-md">${name}</h3>
+                            <p class="text-xs text-white/80">${nameSub}</p>
+                            <p class="text-sm opacity-90 mt-1"><i class="fa-solid fa-location-dot text-red-400 mr-1"></i> ${provText} ${provinceName}</p>
                         </div>
                     </div>
                     
                     <div class="p-5 flex-grow flex flex-col">
-                        <!-- Info Grid -->
                         <div class="grid grid-cols-2 gap-3 mb-4 text-sm text-gray-600 bg-gray-50 p-3 rounded-lg">
-                            <div class="flex items-center" title="ระยะทางเดิน">
-                                <i class="fa-solid fa-person-hiking w-6 text-green-600"></i> ${spot.distance}
+                            <div class="flex items-center" title="Distance">
+                                <i class="fa-solid fa-person-hiking w-5 text-green-600 mr-2"></i> ${spot.distance}
                             </div>
-                            <div class="flex items-center" title="เวลาที่ใช้">
-                                <i class="fa-solid fa-clock w-6 text-green-600"></i> ${spot.duration}
+                            <div class="flex items-center" title="Duration">
+                                <i class="fa-solid fa-clock w-5 text-green-600 mr-2"></i> ${durationText}
                             </div>
                             <div class="flex items-center col-span-2">
-                                <i class="fa-solid fa-gauge-high w-6 ${spot.difficulty === 'hard' ? 'text-red-500' : 'text-green-500'}"></i> 
-                                <span class="${badgeColor} px-2 py-0.5 rounded-full text-xs font-semibold">${spot.diffLabel}</span>
+                                <i class="fa-solid fa-gauge-high w-5 ${spot.difficulty === 'hard' ? 'text-red-500' : 'text-green-500'} mr-2"></i> 
+                                <span class="${badgeColor} px-2 py-0.5 rounded-full text-xs font-semibold">${difficultyLabel}</span>
                             </div>
                         </div>
 
-                        <p class="text-gray-600 text-sm mb-4 flex-grow leading-relaxed">${spot.desc}</p>
+                        <p class="text-gray-600 text-sm mb-4 flex-grow leading-relaxed line-clamp-2">${description}</p>
                         
                         <div class="mt-auto space-y-2">
-                            <div class="flex gap-2">
-                                <a href="${mapLink}" target="_blank" class="flex-1 bg-blue-50 text-blue-600 py-2 rounded-lg text-center text-sm font-semibold hover:bg-blue-100 transition border border-blue-200">
-                                    <i class="fa-solid fa-map-location-dot mr-1"></i> แผนที่
+                             <div class="flex gap-2 text-xs font-bold">
+                                <a href="${mapLink}" target="_blank" class="flex-1 bg-blue-50 text-blue-600 py-2 rounded-lg text-center hover:bg-blue-100 transition border border-blue-200">
+                                    <i class="fa-solid fa-map-location-dot mr-1"></i> ${currentLang === 'th' ? 'แผนที่' : 'Map'}
                                 </a>
-                                <a href="${spot.parkUrl}" target="_blank" class="flex-1 bg-green-50 text-green-600 py-2 rounded-lg text-center text-sm font-semibold hover:bg-green-100 transition border border-green-200">
-                                    <i class="fa-solid fa-tree mr-1"></i> ${spot.parkName}
+                                <a href="${parkLink}" target="_blank" class="flex-1 bg-green-50 text-green-600 py-2 rounded-lg text-center hover:bg-green-100 transition border border-green-200">
+                                    <i class="fa-solid fa-tree mr-1"></i> ${currentLang === 'th' ? 'อุทยาน' : 'Park'}
                                 </a>
                             </div>
+                            <button onclick="openModal(${spot.id})" class="w-full bg-gray-800 hover:bg-black text-white py-2 rounded-lg text-sm font-bold transition shadow-md flex items-center justify-center gap-2">
+                                ${btnText} <i class="fa-solid fa-circle-info"></i>
+                            </button>
                         </div>
                     </div>
                 </div>
             `;
+        }
+
+        // --- MODAL FUNCTIONS ---
+
+        function openModal(id) {
+            const spot = hikingSpots.find(s => s.id === id);
+            if(!spot) return;
+
+            const modal = document.getElementById('detail-modal');
+            const content = document.getElementById('modal-content');
+            
+            // Translations
+            const t = translations[currentLang];
+            const description = currentLang === 'th' ? spot.desc_th : spot.desc_en;
+            const nameMain = currentLang === 'th' ? spot.name : spot.nameEn;
+            const nameSub = currentLang === 'th' ? spot.nameEn : spot.name;
+            const provText = translations[currentLang].province_label;
+            const parkNameText = currentLang === 'th' ? spot.parkName.th : spot.parkName.en;
+            const provinceName = currentLang === 'th' ? spot.province : spot.provinceEn;
+            const durationText = currentLang === 'th' ? spot.duration.th : spot.duration.en;
+            
+            // Generate Reviews HTML
+            let reviewsHtml = '';
+            if(spot.reviews && spot.reviews.length > 0) {
+                reviewsHtml = spot.reviews.map(r => `
+                    <div class="bg-gray-50 p-4 rounded-lg mb-3">
+                        <div class="flex items-center justify-between mb-2">
+                            <span class="font-bold text-gray-800">${r.user}</span>
+                            <div class="text-yellow-400 text-sm">
+                                ${Array(r.rating).fill('<i class="fa-solid fa-star"></i>').join('')}
+                            </div>
+                        </div>
+                        <p class="text-gray-600 text-sm">"${r.comment}"</p>
+                    </div>
+                `).join('');
+            } else {
+                reviewsHtml = '<p class="text-gray-400 italic text-center py-4">No reviews yet</p>';
+            }
+
+            // Generate Gallery HTML (Thumbnails)
+            let galleryHtml = '';
+            if(spot.images && spot.images.length > 0) {
+                 galleryHtml = `
+                    <div class="grid grid-cols-4 gap-2 mt-4">
+                        ${spot.images.map((img, idx) => `
+                            <div class="h-16 md:h-20 rounded-lg overflow-hidden cursor-pointer hover:opacity-80 border-2 border-transparent transition gallery-thumb ${idx===0?'active-thumb':''}" onclick="changeMainImage('${img}', this)">
+                                <img src="${img}" onerror="this.src='${spot.fallbackImage}'" class="w-full h-full object-cover">
+                            </div>
+                        `).join('')}
+                    </div>
+                 `;
+            }
+
+            // FORM ID
+            const formAction = "https://formspree.io/f/mbddrdzr"; 
+
+            // Populate Content
+            content.innerHTML = `
+                <div class="flex flex-col md:flex-row h-full">
+                    <!-- Left: Main Image + Gallery -->
+                    <div class="md:w-1/2 p-6 bg-gray-50 flex flex-col">
+                        <div class="rounded-2xl overflow-hidden shadow-lg h-64 md:h-96 relative group bg-gray-200 mb-2">
+                             <img id="modal-main-image" src="${spot.image}" onerror="this.src='${spot.fallbackImage}'" class="w-full h-full object-cover absolute inset-0 transition duration-300">
+                        </div>
+                        ${galleryHtml}
+                    </div>
+
+                    <!-- Right: Info & Spree -->
+                    <div class="md:w-1/2 p-6 md:p-10 overflow-y-auto">
+                        <div class="border-b pb-4 mb-6">
+                            <h2 class="text-3xl font-bold text-gray-900">${nameMain}</h2>
+                            <h3 class="text-xl text-gray-500 font-light">${nameSub}</h3>
+                            <div class="flex items-center gap-2 mt-2 flex-wrap">
+                                <span class="bg-green-100 text-green-800 px-3 py-1 rounded-full text-xs font-bold"><i class="fa-solid fa-location-dot"></i> ${provText} ${provinceName}</span>
+                                <span class="bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-xs font-bold"><i class="fa-solid fa-person-hiking"></i> ${spot.distance}</span>
+                                <a href="${spot.parkUrl}" target="_blank" class="bg-gray-100 text-gray-600 px-3 py-1 rounded-full text-xs font-bold hover:bg-gray-200 transition"><i class="fa-solid fa-tree"></i> ${parkNameText}</a>
+                            </div>
+                        </div>
+
+                        <p class="text-gray-700 leading-relaxed mb-6">${description}</p>
+                        
+                        <div class="mb-8 flex gap-4">
+                            <a href="${spot.mapUrl}" target="_blank" class="flex-1 text-center bg-blue-600 hover:bg-blue-700 text-white px-4 py-3 rounded-lg text-sm font-bold shadow-md transition">
+                                <i class="fa-solid fa-map-location-dot mr-2"></i> ${t.view_map}
+                            </a>
+                             <a href="${spot.parkUrl}" target="_blank" class="flex-1 text-center bg-green-600 hover:bg-green-700 text-white px-4 py-3 rounded-lg text-sm font-bold shadow-md transition">
+                                <i class="fa-solid fa-tree mr-2"></i> ${currentLang === 'th' ? 'เว็บไซต์อุทยาน' : 'Park Website'}
+                            </a>
+                        </div>
+
+                        <!-- SPREE EVALUATION SECTION -->
+                        <div class="bg-white border border-gray-200 rounded-xl p-6 shadow-sm mb-8 relative overflow-hidden">
+                            <div class="absolute top-0 right-0 bg-green-500 text-white text-xs font-bold px-3 py-1 rounded-bl-lg z-10">SPREE VERIFIED</div>
+                            <h4 class="font-bold text-lg mb-4 flex items-center">
+                                <i class="fa-solid fa-chart-pie text-green-500 mr-2"></i> Spree Evaluation
+                            </h4>
+                            
+                            <div class="flex items-center mb-6">
+                                <div class="text-4xl font-extrabold text-gray-800 mr-4">${spot.spreeRating}</div>
+                                <div>
+                                    <div class="text-yellow-400 text-sm">
+                                        <i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star-half-stroke"></i>
+                                    </div>
+                                    <div class="text-xs text-gray-400">Review Score</div>
+                                </div>
+                            </div>
+
+                            <div class="space-y-3 mb-6">
+                                <div>
+                                    <div class="flex justify-between text-xs mb-1">
+                                        <span>${t.beauty}</span>
+                                        <span class="font-bold">${spot.spreeDetails?.beauty || '-'}</span>
+                                    </div>
+                                    <div class="spree-bar-bg"><div class="spree-bar-fill bg-green-500" style="width: ${((spot.spreeDetails?.beauty || 0)/5)*100}%"></div></div>
+                                </div>
+                                <div>
+                                    <div class="flex justify-between text-xs mb-1">
+                                        <span>${t.safety}</span>
+                                        <span class="font-bold">${spot.spreeDetails?.safety || '-'}</span>
+                                    </div>
+                                    <div class="spree-bar-bg"><div class="spree-bar-fill bg-blue-500" style="width: ${((spot.spreeDetails?.safety || 0)/5)*100}%"></div></div>
+                                </div>
+                                <div>
+                                    <div class="flex justify-between text-xs mb-1">
+                                        <span>${t.value}</span>
+                                        <span class="font-bold">${spot.spreeDetails?.value || '-'}</span>
+                                    </div>
+                                    <div class="spree-bar-bg"><div class="spree-bar-fill bg-yellow-500" style="width: ${((spot.spreeDetails?.value || 0)/5)*100}%"></div></div>
+                                </div>
+                            </div>
+
+                            <!-- WRITE REVIEW FORM -->
+                            <div class="border-t pt-4">
+                                <h5 class="font-bold text-sm mb-3 text-gray-700">${t.write_review}</h5>
+                                <form action="${formAction}" method="POST" class="space-y-3">
+                                    <input type="hidden" name="_subject" value="New Review for ${spot.nameEn}">
+                                    <input type="hidden" name="Location" value="${spot.nameEn}">
+                                    
+                                    <div class="flex items-center">
+                                        <span class="text-xs text-gray-500 mr-2">Rating:</span>
+                                        <div class="rate">
+                                            <input type="radio" id="star5" name="rate" value="5" />
+                                            <label for="star5" title="text">5 stars</label>
+                                            <input type="radio" id="star4" name="rate" value="4" />
+                                            <label for="star4" title="text">4 stars</label>
+                                            <input type="radio" id="star3" name="rate" value="3" />
+                                            <label for="star3" title="text">3 stars</label>
+                                            <input type="radio" id="star2" name="rate" value="2" />
+                                            <label for="star2" title="text">2 stars</label>
+                                            <input type="radio" id="star1" name="rate" value="1" />
+                                            <label for="star1" title="text">1 star</label>
+                                        </div>
+                                    </div>
+
+                                    <input type="text" name="name" placeholder="${t.name_placeholder}" class="w-full bg-gray-50 border border-gray-300 rounded p-2 text-sm focus:outline-none focus:border-green-500" required>
+                                    <textarea name="comment" rows="2" placeholder="${t.comment_placeholder}" class="w-full bg-gray-50 border border-gray-300 rounded p-2 text-sm focus:outline-none focus:border-green-500" required></textarea>
+                                    
+                                    <button type="submit" class="w-full bg-gray-900 text-white py-2 rounded-lg text-sm hover:bg-gray-800 transition font-bold">
+                                        ${t.submit} <i class="fa-solid fa-paper-plane ml-1"></i>
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
+
+                        <!-- User Comments -->
+                        <div>
+                            <h5 class="font-bold text-gray-700 mb-3">${t.recent_reviews}</h5>
+                            ${reviewsHtml}
+                        </div>
+                    </div>
+                </div>
+            `;
+
+            // Show modal
+            modal.classList.remove('hidden');
+            document.body.style.overflow = 'hidden'; 
+        }
+
+        // Helper to switch images in modal
+        window.changeMainImage = function(src, el) {
+            const mainImg = document.getElementById('modal-main-image');
+            
+            // Fade effect
+            mainImg.style.opacity = 0.5;
+            setTimeout(() => {
+                mainImg.src = src;
+                mainImg.style.opacity = 1;
+            }, 150);
+
+            // Update active state of thumbs
+            document.querySelectorAll('.gallery-thumb').forEach(t => t.classList.remove('active-thumb'));
+            el.classList.add('active-thumb'); 
+        }
+
+        function closeModal() {
+            const modal = document.getElementById('detail-modal');
+            modal.classList.add('hidden');
+            document.body.style.overflow = 'auto';
         }
 
         // Render Categories Section
@@ -526,39 +1062,47 @@
                 if(filter === 'all') return true;
                 if(filter === 'easy') return spot.difficulty === 'easy';
                 if(filter === 'hard') return spot.difficulty === 'hard';
+                if(filter === 'east') return false; // No east data yet, prevent empty error
                 return spot.region === filter;
             });
 
             if(filtered.length === 0) {
-                container.innerHTML = `<div class="col-span-4 text-center text-gray-500 py-10 bg-gray-50 rounded-lg border border-dashed border-gray-300">ไม่พบข้อมูลในหมวดหมู่นี้</div>`;
+                container.innerHTML = `<div class="col-span-4 text-center text-gray-500 py-10 bg-gray-50 rounded-lg border border-dashed border-gray-300">${translations[currentLang].no_data}</div>`;
                 return;
             }
 
             filtered.forEach(spot => {
-                // Map link - Now using the custom mapUrl field
                 const mapLink = spot.mapUrl || `https://www.google.com/maps/search/?api=1&query=${spot.coordinates}`;
+                const nameText = currentLang === 'th' ? spot.name : spot.nameEn;
+                const nameSub = currentLang === 'th' ? spot.nameEn : spot.name;
+                const btnText = translations[currentLang].details_btn;
+                const parkNameText = currentLang === 'th' ? spot.parkName.th : spot.parkName.en;
+                const durationText = currentLang === 'th' ? spot.duration.th : spot.duration.en;
+                const provinceName = currentLang === 'th' ? spot.province : spot.provinceEn;
 
                 const card = `
                     <div class="bg-white rounded-lg shadow-sm hover:shadow-md transition duration-300 border border-gray-200 overflow-hidden group">
-                        <div class="h-40 overflow-hidden relative">
-                            <img src="${spot.image}" alt="${spot.name}" class="w-full h-full object-cover transition duration-500 group-hover:scale-105">
+                        <div class="h-40 overflow-hidden relative cursor-pointer" onclick="openModal(${spot.id})">
+                             <img src="${spot.image}" onerror="this.src='${spot.fallbackImage}'" alt="${spot.name}" class="w-full h-full object-cover transition duration-500 group-hover:scale-105">
                             <div class="absolute top-2 right-2 bg-black/50 text-white text-xs px-2 py-1 rounded backdrop-blur-sm">
-                                <i class="fa-solid fa-clock mr-1"></i> ${spot.duration}
+                                <i class="fa-solid fa-clock mr-1"></i> ${durationText}
                             </div>
                         </div>
                         <div class="p-4">
                             <div class="flex justify-between items-start mb-2">
-                                <h4 class="font-bold text-lg text-gray-800">${spot.name}</h4>
-                                <span class="text-xs text-gray-500 bg-gray-100 px-2 py-1 rounded">${spot.province}</span>
+                                <div>
+                                    <h4 class="font-bold text-lg text-gray-800 leading-tight">${nameText}</h4>
+                                    <span class="text-xs text-gray-400">${nameSub}</span>
+                                </div>
+                                <span class="text-xs text-gray-500 bg-gray-100 px-2 py-1 rounded whitespace-nowrap">${provinceName}</span>
                             </div>
                             <div class="text-sm text-gray-600 mb-3 space-y-1">
                                 <div class="flex items-center"><i class="fa-solid fa-ruler-horizontal w-5 text-gray-400"></i> ${spot.distance}</div>
-                                <div class="flex items-center"><i class="fa-solid fa-tree w-5 text-gray-400"></i> ${spot.parkName}</div>
+                                <div class="flex items-center"><i class="fa-solid fa-tree w-5 text-gray-400"></i> ${parkNameText}</div>
                             </div>
-                            <div class="flex gap-2 text-sm mt-3 pt-3 border-t border-gray-100">
-                                <a href="${mapLink}" target="_blank" class="text-blue-500 hover:text-blue-700"><i class="fa-solid fa-map"></i> พิกัด</a>
-                                <a href="${spot.parkUrl}" target="_blank" class="ml-auto text-green-600 hover:text-green-800 font-medium">เว็บอุทยาน ></a>
-                            </div>
+                            <button onclick="openModal(${spot.id})" class="w-full mt-2 text-center text-green-600 hover:text-green-800 text-sm font-medium border border-green-200 rounded py-1 hover:bg-green-50 transition">
+                                ${btnText}
+                            </button>
                         </div>
                     </div>
                 `;
@@ -572,21 +1116,20 @@
             const buttons = document.querySelectorAll('.cat-btn');
             buttons.forEach(btn => {
                 btn.classList.remove('bg-green-600', 'text-white', 'bg-yellow-500', 'bg-red-500', 'shadow-lg');
-                btn.classList.add('text-green-700'); // Reset to default outline text color
+                btn.classList.add('text-green-700'); 
                 
-                // Keep border colors specific
-                if(btn.onclick.toString().includes('easy')) {
+                if(btn.getAttribute('onclick').includes('easy')) {
                     btn.classList.add('text-yellow-700');
                     btn.classList.remove('text-green-700');
                 }
-                if(btn.onclick.toString().includes('hard')) {
+                if(btn.getAttribute('onclick').includes('hard')) {
                     btn.classList.add('text-red-700');
                     btn.classList.remove('text-green-700');
                 }
             });
 
             // Set active button
-            const activeBtn = event.target;
+            const activeBtn = event.target.closest('button'); 
             activeBtn.classList.remove('text-green-700', 'text-yellow-700', 'text-red-700');
             activeBtn.classList.add('shadow-lg');
             
@@ -597,19 +1140,15 @@
 
         // --- NAVIGATION ---
         function navigateTo(pageId) {
-            // Hide all pages
             document.querySelectorAll('.page-section').forEach(section => {
                 section.classList.remove('active');
             });
             
-            // Show target page
             const target = document.getElementById(pageId);
             target.classList.add('active');
 
-            // Scroll to top
             window.scrollTo(0, 0);
 
-            // Trigger animation if Contact page
             if(pageId === 'contact') {
                 initFireflies();
             } else {
@@ -633,23 +1172,19 @@
             if(!container.querySelector('canvas')) {
                 container.appendChild(canvas);
             }
-            
             resizeCanvas();
             window.addEventListener('resize', resizeCanvas);
-
-            // Create particles
             particles = [];
             for(let i = 0; i < 50; i++) {
                 particles.push(new Particle());
             }
-
             animate();
         }
 
         function stopFireflies() {
             cancelAnimationFrame(animationId);
             const container = document.getElementById('canvas-container');
-            if(container) container.innerHTML = ''; // Clear canvas
+            if(container) container.innerHTML = '';
         }
 
         function resizeCanvas() {
@@ -665,16 +1200,13 @@
                 this.speedX = Math.random() * 1 - 0.5;
                 this.speedY = Math.random() * 1 - 0.5;
                 this.opacity = Math.random();
-                this.color = `rgba(72, 187, 120, ${this.opacity})`; // Green firefly
+                this.color = `rgba(72, 187, 120, ${this.opacity})`; 
             }
 
             update() {
                 this.x += this.speedX;
                 this.y += this.speedY;
-
                 if (this.size > 0.2) this.size -= 0.01; 
-                
-                // Wrap around screen
                 if (this.x > canvas.width) this.x = 0;
                 if (this.x < 0) this.x = canvas.width;
                 if (this.y > canvas.height) this.y = 0;
@@ -702,7 +1234,7 @@
         document.addEventListener('DOMContentLoaded', () => {
             renderTop10();
             renderCategories();
-            navigateTo('home'); // Start at home
+            navigateTo('home');
         });
 
     </script>
